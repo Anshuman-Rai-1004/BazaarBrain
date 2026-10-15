@@ -1,0 +1,386 @@
+/* ====================================================
+   BazaarBrain Sidebar
+   Forest Green identity surface
+   ==================================================== */
+
+.sidebar {
+  position: fixed;
+  inset-block: 0;
+  left: 0;
+  width: var(--sidebar-width);
+  height: 100vh;
+  background: var(--bb-forest);
+  display: flex;
+  flex-direction: column;
+  z-index: var(--z-sidebar);
+  transition:
+    width var(--transition-slow),
+    transform var(--transition-slow);
+  overflow: hidden;
+  /* Subtle inner border on right side */
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.06);
+}
+
+.sidebar.collapsed {
+  width: var(--sidebar-collapsed-width);
+}
+
+/* ── Brand Header ── */
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 0 var(--space-4);
+  height: var(--topbar-height);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.sidebar-brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  flex-shrink: 0;
+  /* Subtle lime ring on logo */
+  box-shadow: 0 0 0 1.5px rgba(229,254,152,0.25);
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  transition: opacity var(--transition-base), width var(--transition-slow);
+}
+
+.sidebar-brand-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-bold);
+  color: #fff;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.sidebar-brand-sub {
+  font-size: 0.6875rem;
+  color: rgba(255,255,255,0.40);
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.collapsed .sidebar-brand-text {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* ── Workspace Switcher ── */
+.sidebar-workspace {
+  margin: var(--space-3) var(--space-3) 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.sidebar-workspace:hover {
+  background: rgba(255,255,255,0.09);
+}
+
+.workspace-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--bb-sage);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--text-xs);
+  font-weight: var(--weight-bold);
+  color: #fff;
+  flex-shrink: 0;
+  letter-spacing: 0.02em;
+}
+
+.workspace-info {
+  flex: 1;
+  min-width: 0;
+  transition: opacity var(--transition-base);
+}
+
+.workspace-name {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  color: rgba(255,255,255,0.88);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.workspace-type {
+  font-size: 0.6875rem;
+  color: rgba(255,255,255,0.38);
+  white-space: nowrap;
+}
+
+.workspace-chevron {
+  flex-shrink: 0;
+  transition: opacity var(--transition-base);
+}
+
+.collapsed .sidebar-workspace {
+  margin: var(--space-2);
+  padding: var(--space-2);
+  justify-content: center;
+}
+
+.collapsed .workspace-info,
+.collapsed .workspace-chevron {
+  display: none;
+}
+
+/* ── Navigation ── */
+.sidebar-nav {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-3) 0;
+}
+
+.nav-group {
+  padding: 0 var(--space-3);
+  margin-bottom: var(--space-1);
+}
+
+.nav-group-label {
+  font-size: 0.625rem;
+  font-weight: var(--weight-semibold);
+  color: rgba(255,255,255,0.28);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: var(--space-2) var(--space-2) var(--space-1);
+  white-space: nowrap;
+  transition: opacity var(--transition-base);
+}
+
+.collapsed .nav-group-label {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* ── Nav Item ── */
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: 9px var(--space-2);
+  border-radius: var(--radius-md);
+  color: rgba(255,255,255,0.64);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast);
+  text-decoration: none;
+  white-space: nowrap;
+  position: relative;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  line-height: 1;
+}
+
+.nav-item:hover {
+  background: rgba(255,255,255,0.07);
+  color: rgba(255,255,255,0.92);
+}
+
+/* Active state: lime highlight bar on left + lime text */
+.nav-item.active {
+  background: rgba(229,254,152,0.10);
+  color: var(--bb-lime);
+}
+
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: calc(var(--space-3) * -1);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  background: var(--bb-lime);
+  border-radius: 0 2px 2px 0;
+}
+
+.nav-item-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  transition: color var(--transition-fast);
+}
+
+.nav-item-label {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition:
+    opacity var(--transition-base),
+    width var(--transition-slow);
+}
+
+.collapsed .nav-item-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.collapsed .nav-item {
+  justify-content: center;
+  padding: 9px;
+}
+
+.collapsed .nav-item.active::before {
+  left: -10px;
+}
+
+/* Badge */
+.nav-item-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 16px;
+  padding: 0 5px;
+  font-size: 0.5625rem;
+  font-weight: var(--weight-bold);
+  background: var(--color-error);
+  color: #fff;
+  border-radius: var(--radius-pill);
+  flex-shrink: 0;
+}
+
+.collapsed .nav-item-badge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  min-width: 14px;
+  height: 14px;
+  padding: 0 3px;
+  font-size: 0.5rem;
+}
+
+/* ── Sidebar Footer ── */
+.sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: var(--space-3);
+  flex-shrink: 0;
+}
+
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.32);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.sidebar-toggle:hover {
+  color: rgba(255,255,255,0.64);
+  background: rgba(255,255,255,0.06);
+}
+
+.collapsed .sidebar-toggle span {
+  display: none;
+}
+
+/* ── Mobile Overlay ── */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.48);
+  backdrop-filter: blur(2px);
+  z-index: calc(var(--z-sidebar) - 1);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.sidebar-overlay.visible {
+  opacity: 1;
+}
+
+/* ── Mobile Responsive ── */
+@media (max-width: 767px) {
+  .sidebar {
+    transform: translateX(-100%);
+    width: var(--sidebar-width) !important;
+    box-shadow: var(--shadow-xl);
+  }
+
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .sidebar-overlay {
+    display: block;
+  }
+
+  /* Force full labels in mobile drawer */
+  .collapsed .nav-item-label,
+  .collapsed .sidebar-brand-text,
+  .collapsed .workspace-info,
+  .collapsed .workspace-chevron,
+  .collapsed .nav-group-label {
+    display: unset !important;
+    opacity: 1 !important;
+    width: auto !important;
+    height: auto !important;
+  }
+
+  .collapsed .nav-group-label {
+    padding: var(--space-2) var(--space-2) var(--space-1) !important;
+  }
+
+  .collapsed .nav-item {
+    justify-content: flex-start;
+    padding: 9px var(--space-2);
+  }
+
+  .collapsed .nav-item.active::before {
+    left: calc(var(--space-3) * -1);
+  }
+
+  .collapsed .sidebar-workspace {
+    margin: var(--space-3) var(--space-3) 0;
+    padding: var(--space-2) var(--space-3);
+    justify-content: flex-start;
+  }
+}
+
+/* ── Tablet: icon+label sidebar ── */
+@media (min-width: 768px) and (max-width: 1023px) {
+  :root {
+    --sidebar-width: 220px;
+  }
+}

@@ -1,0 +1,55 @@
+/* Shared page shell */
+.placeholder-page {
+  min-height: 60vh;
+}
+
+.placeholder-page .page-header {
+  margin-bottom: var(--space-6);
+}
+
+/* ── Placeholder Content Cards ── */
+.placeholder-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  padding: var(--space-16) var(--space-8);
+  background: var(--color-bg-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-xl);
+  text-align: center;
+}
+
+.placeholder-card-icon {
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-xl);
+  background: var(--color-bg-muted);
+  color: var(--color-text-muted);
+}
+
+.placeholder-card h3 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.placeholder-card p {
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  max-width: 400px;
+  margin: 0;
+  line-height: var(--leading-relaxed);
+}
+
+/* Pill filter group */
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}

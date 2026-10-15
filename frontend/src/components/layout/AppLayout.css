@@ -1,0 +1,41 @@
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-main-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  transition: margin-left var(--transition-slow);
+}
+
+.app-main-area.sidebar-expanded {
+  margin-left: var(--sidebar-width);
+}
+
+.app-main-area.sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+}
+
+.app-content {
+  flex: 1;
+  margin-top: var(--topbar-height);
+  padding: var(--page-padding);
+}
+
+/* Constrain content width but don't center on small screens */
+.app-content > * {
+  max-width: var(--page-max-width);
+}
+
+@media (max-width: 767px) {
+  .app-main-area {
+    margin-left: 0 !important;
+  }
+
+  .app-content {
+    padding: var(--page-padding);
+  }
+}
