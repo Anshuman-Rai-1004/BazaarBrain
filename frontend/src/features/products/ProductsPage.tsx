@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Plus, Search, LayoutGrid, List, Package,
@@ -16,8 +16,7 @@ const STATUS_BADGE: Record<string, string> = {
 };
 
 export default function ProductsPage() {
-  const [refreshKey, setRefreshKey]   = useState(0);
-  const products                       = useMemo(() => getProducts(), [refreshKey]);
+  const [products, setProducts] = useState(() => getProducts());
   const [showForm, setShowForm]       = useState(false);
   const [editId, setEditId]           = useState<string | undefined>(undefined);
   const [search, setSearch]           = useState('');
@@ -25,7 +24,9 @@ export default function ProductsPage() {
   const [statusFilter, setStatusFilter] = useState('all');
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
-  const filtered = useMemo(() =>
+  const refresh = () => setProducts(getProducts());
+
+  const filtered =
     products.filter(p => {
       const q = search.toLowerCase();
       const matchSearch = !q ||
@@ -34,13 +35,11 @@ export default function ProductsPage() {
         p.category.toLowerCase().includes(q) ||
         p.brand.toLowerCase().includes(q);
       return matchSearch && (statusFilter === 'all' || p.status === statusFilter);
-    }),
-    [products, search, statusFilter]
-  );
+    });
 
   const openEdit = (id: string) => { setEditId(id); setShowForm(true); };
   const openAdd  = () => { setEditId(undefined); setShowForm(true); };
-  const refresh  = () => setRefreshKey(k => k + 1);
+
 
   const handleDelete = (id: string) => {
     if (deleteTarget === id) {
