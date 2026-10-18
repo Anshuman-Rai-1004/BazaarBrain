@@ -22,6 +22,7 @@ const GENERATION_TYPES: { id: GenerationType; label: string; icon: typeof FileTe
   { id: 'description', label: 'Product Description', icon: FileText, desc: 'Generate compelling product descriptions' },
   { id: 'seo', label: 'SEO Title & Meta', icon: SearchIcon, desc: 'Create optimized titles and meta descriptions' },
   { id: 'whatsapp', label: 'WhatsApp Copy', icon: MessageCircle, desc: 'Promotional messages for WhatsApp' },
+  { id: 'instagram', label: 'Instagram Caption', icon: MessageCircle, desc: 'Captions and hashtags for Instagram' },
   { id: 'faq', label: 'Product FAQ', icon: HelpCircle, desc: 'Answer common customer questions' },
 ];
 
@@ -39,25 +40,68 @@ export default function AIStudioPage() {
 
   const selectedProduct = products.find(p => p.id === selectedProductId);
 
-  function handleGenerate() {
-    if (!selectedProduct) return;
+  async function handleGenerate() {
+    if (!selectedProduct || generating) return;
 
     setGenerating(true);
-    // Simulated generation — real implementation would call local AI model
-    setTimeout(() => {
-      const demoOutputs: Record<GenerationType, string> = {
-        description: `${selectedProduct.name}\n\n${selectedProduct.description}\n\nKey Details:\n• Category: ${selectedProduct.category}\n• Brand: ${selectedProduct.brand}\n${Object.entries(selectedProduct.attributes).map(([k, v]) => `• ${k}: ${v}`).join('\n')}\n\nPrice: ₹${selectedProduct.sellingPrice}\n\n[AI-generated demo content — connect a local AI model in Settings for real generations]`,
-        seo: `Title: ${selectedProduct.name} | ${selectedProduct.brand} | Buy Online\n\nMeta Description: Shop ${selectedProduct.name} from ${selectedProduct.brand}. ${selectedProduct.description.slice(0, 120)}. Order now at ₹${selectedProduct.sellingPrice}.\n\n[AI-generated demo content]`,
-        whatsapp: `🛍️ *${selectedProduct.name}*\n\n${selectedProduct.description.slice(0, 100)}\n\n✅ ${Object.entries(selectedProduct.attributes).map(([k, v]) => `${k}: ${v}`).join(' | ')}\n💰 Only ₹${selectedProduct.sellingPrice}\n\nReply to order! 📦\n\n[Demo — connect AI model for real content]`,
-        instagram: `${selectedProduct.name} ✨\n\n${selectedProduct.description.slice(0, 150)}\n\n🏷️ ₹${selectedProduct.sellingPrice}\n📦 ${selectedProduct.stock > 0 ? 'In Stock' : 'Sold Out'}\n\n#${selectedProduct.category.replace(/\s/g, '')} #${selectedProduct.brand.replace(/\s/g, '')} #ShopLocal #SmallBusiness\n\n[Demo content]`,
-        faq: `Q: What is ${selectedProduct.name}?\nA: ${selectedProduct.description}\n\nQ: How much does it cost?\nA: ${selectedProduct.name} is priced at ₹${selectedProduct.sellingPrice}.\n\nQ: Is it available?\nA: ${selectedProduct.stock > 0 ? `Yes, ${selectedProduct.stock} ${selectedProduct.unit}(s) available.` : 'Currently out of stock.'}\n\n[Demo FAQ — connect AI model for detailed answers]`,
-      };
-      setOutput(demoOutputs[selectedType]);
-      setGenerating(false);
-    }, 1200);
-  }
+    setOutput('');
+    setCopied(false);
 
-  function handleCopy() {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/ai/${selectedType}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            name: selectedProduct.name,
+            category: selectedProduct.category,
+            details: [
+              selectedProduct.description,
+              ...Object.entries(selectedProduct.attributes).map(
+                ([key, value]) => `${key}: ${value}`
+              )
+            ].filter(Boolean).join('\n'),
+            price: selectedProduct.sellingPrice,
+            stock: selectedProduct.stock,
+            language:
+              language === 'en'
+                ? 'English'
+                : language === 'hi'
+                  ? 'Hindi'
+                  : 'Hinglish',
+            tone
+          })
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.message || result.error || 'AI generation failed.'
+        );
+      }
+
+      const generatedText =
+        result.data?.content ?? result.data?.description;
+
+      if (typeof generatedText !== 'string' || !generatedText.trim()) {
+        throw new Error('The AI returned an empty response.');
+      }
+
+      setOutput(generatedText.trim());
+    } catch (error) {
+      const message = error instanceof Error
+        ? error.message
+        : 'An unexpected error occurred.';
+
+      setOutput(`AI generation failed: ${message}`);
+    } finally {
+      setGenerating(false);
+    }
+  }
+function handleCopy() {
     if (!output) return;
     navigator.clipboard.writeText(output).then(() => {
       setCopied(true);
@@ -89,7 +133,7 @@ export default function AIStudioPage() {
 
       <div className="demo-notice">
         <Info size={14} />
-        <span>AI generation uses demo content to preview the workflow. Connect a local AI model in Settings for real generations.</span>
+        <span>All content types use your locally running Qwen AI model. Generation may take a little time on CPU.</span>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 'var(--space-4)', alignItems: 'start' }}>

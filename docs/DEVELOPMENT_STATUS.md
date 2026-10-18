@@ -1,19 +1,19 @@
 # BazaarBrain — Development Status
 
 > **Last updated:** 2026-10-16
-> **Build:** ✅ Reported clean
-> **Lint:** ✅ Reported 0 errors, 0 warnings
-> **Current Phase:** Frontend Core Complete — Backend and Product Completion Next
+> **Build:** ✅ Clean (frontend and backend)
+> **Lint:** ✅ 0 errors, 0 warnings (frontend)
+> **Current Phase:** Backend Foundation Live — Frontend-to-Backend Integration Next
 
 ---
 
 ## Current Project Status
 
-BazaarBrain is a React + TypeScript + Vite application for local commerce management and AI-assisted product content generation.
+BazaarBrain is a full-stack commerce management and AI-assisted content generation platform.
 
-The core frontend workflows and premium editorial SaaS UI/UX redesign are reported complete. The application uses localStorage for browser-local persistence. A production backend, database, real AI model integration, and comprehensive automated tests remain future work.
+The **frontend** is a React + TypeScript + Vite application with a premium editorial SaaS design system. Core commerce workflows (products, inventory, orders, customers) are implemented in the UI and currently backed by browser localStorage.
 
-The build and lint results below reflect the development checkpoint dated 2026-10-16 and have not been independently rerun as part of this documentation update.
+The **backend** is an Express 5 + TypeScript server connected to a PostgreSQL 18 database via Prisma 7 and the `@prisma/adapter-pg` driver. The initial Prisma migration has been applied, the Prisma client has been generated, and the Products API has been implemented and manually verified. The frontend and backend are not yet integrated — frontend pages still read from localStorage, not the backend API.
 
 ---
 
@@ -32,7 +32,7 @@ The build and lint results below reflect the development checkpoint dated 2026-1
 - Sidebar navigation, top bar, and mobile drawer.
 - Global styling and shared design tokens.
 
-### Phase 2 — Core Commerce Workflows
+### Phase 2 — Core Commerce Workflows (Frontend / localStorage)
 
 **Products**
 - Product listing, search, filtering, and grid/list toggle.
@@ -75,6 +75,7 @@ The build and lint results below reflect the development checkpoint dated 2026-1
 - Category breakdowns.
 - Order status distribution.
 - Inventory health panel.
+- **Note:** All analytics currently read from localStorage/demo data. Accuracy against real persisted records must be verified after backend integration.
 
 **Brand Memory**
 - Brand information and content rules.
@@ -115,11 +116,11 @@ The build and lint results below reflect the development checkpoint dated 2026-1
 | Page | Status | Key Elements |
 |---|---|---|
 | Dashboard | ✅ | Welcome banner, statistics, activity, quick actions |
-| Products | ✅ | Search, filters, grid/list view, CRUD workflows |
-| Product Form | ✅ | Add/edit modal, validation, unit selector |
-| Inventory | ✅ | Stock operations, movement history, statistics |
-| Orders | ✅ | Order details, status transitions, stock policy |
-| Customers | ✅ | Statistics, search, filtering, contact information |
+| Products | ✅ UI / localStorage | Search, filters, grid/list view, CRUD workflows |
+| Product Form | ✅ UI / localStorage | Add/edit modal, validation, unit selector |
+| Inventory | ✅ UI / localStorage | Stock operations, movement history, statistics |
+| Orders | ✅ UI / localStorage | Order details, status transitions, stock policy |
+| Customers | ✅ UI / localStorage | Statistics, search, filtering, contact information |
 | AI Studio | ⚙️ Demo mode | Content generation interface with simulated output |
 | Brand Memory | ✅ Local | Brand rules and preferences stored in localStorage |
 | Analytics | ⚙️ Local/demo data | Statistics, categories, order distribution, inventory health |
@@ -128,6 +129,77 @@ The build and lint results below reflect the development checkpoint dated 2026-1
 | Automations | ⚙️ Partial | Workflow display; execution not connected |
 | Settings | ⚙️ Partial | Provider configuration UI; real AI connection pending |
 | Product Detail | ⏳ Pending | `/products/:id` route exists; page content remains to be implemented or verified |
+
+### Phase 4 — Backend Foundation & Products API ✅ Implemented & Manually Verified
+
+#### Backend Stack (confirmed from source)
+
+| Component | Detail |
+|---|---|
+| Runtime | Node.js + TypeScript |
+| Framework | Express 5 (`^5.3.0`) |
+| Database | PostgreSQL 18 |
+| ORM | Prisma 7 (`^7.10.1`) with `@prisma/adapter-pg` |
+| Validation | Zod (`^4.6.7`) |
+| Dev server | `tsx watch` |
+| Build | `tsc -p tsconfig.json` → `dist/` |
+
+#### Prisma Schema — Models confirmed in `backend/prisma/schema.prisma`
+
+| Model | Key Fields |
+|---|---|
+| `User` | id, name, email, passwordHash, role (OWNER/ADMIN/STAFF) |
+| `Category` | id, name, slug (unique) |
+| `Product` | id, name, sku (unique), description, price (Decimal 12,2), stock, status, categoryId |
+| `Customer` | id, name, email, phone |
+| `Order` | id, orderNumber, status, total, customerId |
+| `OrderItem` | id, quantity, unitPrice, orderId, productId |
+
+#### Health Endpoints — Previously Verified
+
+| Endpoint | Method | Status |
+|---|---|---|
+| `/api/health` | GET | ✅ Verified |
+| `/api/health/db` | GET | ✅ Verified (PostgreSQL `SELECT 1` liveness check) |
+
+#### Products API — Manually Verified (2026-10-16)
+
+| Endpoint | Method | Status |
+|---|---|---|
+| `/api/products` | GET | ✅ Verified — returns `{ success: true, data: [...] }` |
+| `/api/products/:id` | GET | ✅ Verified — returns product or HTTP 404 with `Product not found` |
+| `/api/products` | POST | ✅ Verified — creates product, returns HTTP 201 |
+| `/api/products/:id` | PATCH | ✅ Verified — partial update, returns updated product |
+| `/api/products/:id` | DELETE | ✅ Implemented — Prisma P2003 and P2025 error codes handled |
+
+**Error handling confirmed in Products API:**
+- HTTP 400 — Zod validation failure (with flattened error details).
+- HTTP 404 — Product not found (Prisma P2025).
+- HTTP 409 — Duplicate SKU (Prisma P2002); order FK violation on delete (Prisma P2003).
+- HTTP 500 — Unexpected server error.
+
+#### Manual Verification Test Record (2026-10-16)
+
+A test product was created, its stock was updated, and a subsequent GET confirmed persistence in PostgreSQL:
+
+| Field | Value |
+|---|---|
+| Name | `Test Product` |
+| SKU | `TEST-BB-001` |
+| Price | 499 |
+| Stock (created) | 10 |
+| Stock (after PATCH) | 25 |
+| Status | ACTIVE |
+| Persistence | ✅ Confirmed via GET after PATCH |
+
+**Backend build verification (2026-10-16):**
+
+```text
+npx tsc --noEmit   — 0 errors
+npm run build      — successful (dist/ generated)
+GET /api/products  — { "success": true, "data": [] }
+GET /api/health    — { "success": true, ... }
+```
 
 ---
 
@@ -160,54 +232,58 @@ These are reported implementation results, not a substitute for a formal accessi
 
 ## 🔧 Known Limitations / Future Work
 
-### 1. Product Workflow
+### 1. Frontend-to-Backend Integration (Next Milestone)
+- All frontend pages still read from and write to browser localStorage.
+- The Products API exists in the backend but the Products UI does not call it.
+- No frontend API service layer exists yet; `src/services/dataService.ts` operates locally.
+- Integration work is required for every module: products, inventory, orders, customers.
+
+### 2. Product Workflow
 - Product Detail page at `/products/:id` remains pending.
 - Automated tests for product validation, CRUD, and persistence are needed.
 
-### 2. Backend & Database
-- No implemented backend API is confirmed.
-- No server-side database is configured.
-- Current persistence relies on browser localStorage.
-- Data is not shared automatically across devices or users.
-- API contracts, database schema, migrations, and validation are pending.
+### 3. Backend Modules Not Yet Implemented
+- No inventory movement, order, or customer API endpoints have been created.
+- No authentication or session management is implemented.
+- The `User` model exists in the schema but no auth endpoints or middleware are present.
 
-### 3. AI Studio
+### 4. AI Studio
 - Content generation currently uses demo-mode logic.
 - Real local model integration is not connected.
 - Ollama endpoint/model configuration and connection testing remain pending.
 
-### 4. Brand Memory
-- Brand information is persisted locally.
+### 5. Brand Memory
+- Brand information is persisted locally in the frontend.
 - A backend knowledge base or searchable vector store is not implemented.
 - Integration of brand context into real AI generation remains pending.
 
-### 5. Catalogs
-- Catalog creation and editing are not implemented.
-- Product selection, preview, and catalog persistence remain pending.
+### 6. Catalogs
+- Catalog creation and editing are not implemented in UI or backend.
 
-### 6. Marketing
-- Campaign cards are implemented.
+### 7. Marketing
+- Campaign cards are implemented in the UI.
 - Campaign creation, editing, and persistent draft management remain pending.
 
-### 7. Automations
-- Workflow cards are present.
+### 8. Automations
+- Workflow cards are present in the UI.
 - Rule creation, trigger evaluation, execution history, and scheduling are not implemented.
 
-### 8. Settings
+### 9. Settings
 - AI provider configuration UI exists.
 - Actual provider connection and validation are not implemented.
 
-### 9. Testing & Production Readiness
-- Comprehensive automated unit and integration tests are pending.
+### 10. Testing & Production Readiness
+- No automated backend tests exist (manual API verification only).
+- No automated frontend tests exist.
 - CI pipeline status needs verification.
-- Security review and production deployment configuration are pending.
+- Security review, authentication, and production deployment configuration are pending.
 - Accessibility and responsive regression testing need repeatable checks.
 
 ---
 
-## 🧪 Build & Lint Results
+## 🧪 Build & Verification Results
 
-**Checkpoint results reported on 2026-10-16:**
+**Frontend checkpoint (2026-10-16):**
 
 ```text
 npm run lint
@@ -221,42 +297,59 @@ JavaScript bundle: 373 KB
 Gzipped JavaScript: approximately 106 KB
 ```
 
-**Verification note:** These results come from the supplied checkpoint. Rerun the commands from the frontend directory to confirm the current state after subsequent changes.
+**Backend checkpoint (2026-10-16, independently verified):**
+
+```text
+npx tsc --noEmit   — 0 errors
+npm run build      — successful (tsc -p tsconfig.json)
+GET /api/health    — 200 OK
+GET /api/products  — 200 OK, { "success": true, "data": [] }
+POST /api/products — 201 Created (test product)
+PATCH /api/products/:id — 200 OK (stock updated 10 → 25)
+GET /api/products/:id  — 200 OK (confirmed updated stock persisted)
+```
 
 ---
 
 ## 🚀 Next Development Milestones
 
-### Milestone 1 — Complete Product Workflow
-- Implement Product Detail page.
+### Milestone 1 — Frontend-to-Backend Integration (Products)
+- Introduce a frontend API service layer (e.g., `src/services/api.ts`).
+- Connect the Products page to `GET /api/products`.
+- Connect product create/edit forms to `POST` and `PATCH /api/products/:id`.
+- Handle loading, empty, and error states in the Products UI.
+- Verify data persists across page refreshes (no longer lost on localStorage clear).
+- Preserve existing UI and local workflows where needed during transition.
+
+### Milestone 2 — Complete Product Workflow
+- Implement Product Detail page at `/products/:id`.
 - Connect product navigation and edit actions.
 - Add tests for product details and invalid/missing product IDs.
 
-### Milestone 2 — Backend Foundation
-- Choose Node.js + TypeScript with Express or Fastify.
-- Set up SQLite initially, if suitable for the local-first requirement.
-- Add schema migrations and seed data.
-- Implement validated product, customer, order, and inventory endpoints.
-- Preserve existing frontend workflows during migration.
+### Milestone 3 — Backend Endpoints for Inventory, Orders & Customers
+- Implement inventory movement endpoints.
+- Implement order CRUD and status-transition endpoints with server-side stock safety.
+- Implement customer CRUD endpoints.
+- Integrate each frontend module with the corresponding backend API.
 
-### Milestone 3 — Feature Completion
+### Milestone 4 — Feature Completion
 - Implement catalog creation and editing.
 - Implement marketing campaign creation and draft persistence.
 - Verify analytics against real persisted records.
 - Add automation rule creation and execution.
 
-### Milestone 4 — AI Integration
+### Milestone 5 — AI Integration
 - Add optional Ollama integration.
 - Implement provider settings and connection checks.
 - Add timeout, error, and fallback handling.
 - Pass product information and Brand Memory context to AI generation.
 
-### Milestone 5 — Testing & Production Readiness
-- Add unit and integration tests.
+### Milestone 6 — Testing & Production Readiness
+- Add backend unit and integration tests.
 - Add React component tests.
 - Test order/inventory consistency.
 - Configure CI for lint, build, and tests.
-- Complete security review and deployment documentation.
+- Complete security review, authentication, and deployment documentation.
 
 ---
 
@@ -267,7 +360,7 @@ Gzipped JavaScript: approximately 106 KB
 - Avoid unnecessary redesign of completed pages.
 - Keep demo mode available where it is useful.
 - Separate frontend UI, business logic, and persistence.
-- Validate critical business rules at the backend once it exists.
+- Validate critical business rules at the backend.
 - Never report unverified functionality as complete.
 - Run lint, build, and relevant tests after each meaningful milestone.
 

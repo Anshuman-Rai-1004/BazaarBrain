@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import AppLayout from './components/layout/AppLayout';
 import Dashboard from './features/dashboard/Dashboard';
 import ProductsPage from './features/products/ProductsPage';
+import ProductDetailPage from './features/products/ProductDetailPage';
 import InventoryPage from './features/inventory/InventoryPage';
 import AIStudioPage from './features/ai-studio/AIStudioPage';
 import MarketingPage from './features/marketing/MarketingPage';
@@ -30,7 +31,7 @@ export default function App() {
         <Route element={<AppLayout />}>
           <Route index element={<Dashboard />} />
           <Route path="products" element={<ProductsPage />} />
-          <Route path="products/:productId" element={<ProductsPage />} />
+          <Route path="products/:productId" element={<ProductDetailPage />} />
           <Route path="inventory" element={<InventoryPage />} />
           <Route path="ai-studio" element={<AIStudioPage />} />
           <Route path="marketing" element={<MarketingPage />} />
